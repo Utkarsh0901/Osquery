@@ -98,5 +98,5 @@ endif()
 - We can configure OSquery by using __osqueryd2.conf__. You can specify which plugin to use, where to produce logs, ip address of the remote server, and many other things. When starting osqueryd you may use __--logger_plugin=name__ where the name is the string identifier used in REGISTER ( for filesystem_logger2 use __filesystem2__ ). For using __osqueryd2.conf__ you have to use --config_path="/path/to/config/osqueryd2.conf" while running osqueryd.
 ## Running osqueryd
 ```bash
-$ sudo ./build/xenial/osquery/osqueryd --config_path="/path/to/config//osqueryd2.conf" --allow_unsafe
+$ sudo ./build/xenial/osquery/osqueryd --config_path="/path/to/config/osqueryd2.conf" --allow_unsafe
 ```
