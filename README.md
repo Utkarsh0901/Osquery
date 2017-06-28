@@ -7,7 +7,7 @@
 osquery is an operating system instrumentation framework for OS X/macOS, Windows, and Linux. <br/>
 The tools make low-level operating system analytics and monitoring both performant and intuitive.
 
-<T align="center">
+
 | Platform | Build status  | | | |
 |----------|---------------|---|---|---|
 macOS 10.12    | [![Build Status](https://jenkins.osquery.io/job/osqueryMasterBuildOSX10.12/badge/icon)](https://jenkins.osquery.io/job/osqueryMasterBuildOSX10.12/) | | **Homepage:** | https://osquery.io
