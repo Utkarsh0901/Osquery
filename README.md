@@ -19,68 +19,15 @@ Windows 10 | [![Build Status](https://jenkins.osquery.io/job/osqueryMasterBuildW
 
 There are many additional [continuous build jobs](https://jenkins.osquery.io/) that perform **dynamic** and **static** analysis, test the **package build** process, **rebuild dependencies** from source, assure **deterministic build** on macOS and Linux, **fuzz** test the virtual tables, and build on several other platforms not included above. Code safety, testing rigor, data integrity, and a friendly development community are our primary goals.
 
-## What is osquery?
-
-osquery exposes an operating system as a high-performance relational database. This allows you to write SQL-based queries to explore operating system data. With osquery, SQL tables represent abstract concepts such as running processes, loaded kernel modules, open network connections, browser plugins, hardware events or file hashes.
-
-SQL tables are implemented via a simple plugin and extensions API. A variety of tables already exist and more are being written: [https://osquery.io/tables](https://osquery.io/tables). To best understand the expressiveness that is afforded to you by osquery, consider the following SQL queries:
-
-List the [`users`](https://osquery.io/docs/tables/#users):
-```sql
-SELECT * FROM users;
-```
-
-Check the [`processes`](https://osquery.io/docs/tables/#processes) that have a deleted executable:
-```sql
-SELECT * FROM processes WHERE on_disk = 0;
-```
-
-Get the process name, port, and PID, for processes listening on all interfaces:
-```sql
-SELECT DISTINCT processes.name, listening_ports.port, processes.pid
-  FROM listening_ports JOIN processes USING (pid)
-  WHERE listening_ports.address = '0.0.0.0';
-```
-
-Find every OS X LaunchDaemon that launches an executable and keeps it running:
-```sql
-SELECT name, program || program_arguments AS executable
-  FROM launchd
-  WHERE (run_at_load = 1 AND keep_alive = 1)
-  AND (program != '' OR program_arguments != '');
-```
-
-Check for ARP anomalies from the host's perspective:
-
-```sql
-SELECT address, mac, COUNT(mac) AS mac_count
-  FROM arp_cache GROUP BY mac
-  HAVING count(mac) > 1;
-```
-
-Alternatively, you could also use a SQL sub-query to accomplish the same result:
-
-```sql
-SELECT address, mac, mac_count
-  FROM
-    (SELECT address, mac, COUNT(mac) AS mac_count FROM arp_cache GROUP BY mac)
-  WHERE mac_count > 1;
-```
-
-These queries can be:
-* performed on an ad-hoc basis to explore operating system state using the [osqueryi](https://osquery.readthedocs.org/en/latest/introduction/using-osqueryi/) shell
-* executed via a [scheduler](https://osquery.readthedocs.org/en/latest/introduction/using-osqueryd/) to monitor operating system state across a set of hosts
-* launched from custom applications using osquery Thrift APIs
-
-## Downloads / Install
+# Platform : Ubuntu 16.04 -
+## Downloads 
 
 For latest stable builds for OS X (pkg) and Linux (deb/rpm), as well as yum and apt repository information visit [https://osquery.io/downloads](https://osquery.io/downloads/). Windows 10, 8, Server 2012 and 2016 packages are published to [Chocolatey](https://chocolatey.org/packages/osquery).
 
-The list of supported platforms for **running** osquery is massive:
-- Apple OS X 10.10, 10.11, and macOS 10.12
-- Any 64bit Linux OS with `glibc >= 2.13` and `zlib >= 1.2`
-- Windows 10, 8, Server 2012, and 2016
-
+```bash
+$ git clone http://github.com/facebook/osquery.git
+$ cd osquery/
+```
 ## Building from source
 
 Building osquery from source is encouraged! [Check out the documentation](https://osquery.readthedocs.org/en/latest/development/building/) to get started and join our developer community by giving us feedback in Github issues or submitting pull requests!
@@ -90,21 +37,66 @@ We *officially* support a subset of OS versions for **building** because it is r
 - Apple macOS 10.12
 - Windows 10 and Server 2016
 
-## File Integrity Monitoring (FIM)
+```bash
+$ make deps
+$ make -j 8
+$ ./build/<platform>/osquery/osqueryi
+```
+- We will use linux platform. You can look in _osquery/build_ for more supporting platforms. 
+## Optional Dependencies
+- __FPM__ : http://midactstech.blogspot.in/2014/05/install-fpm.html
+- __DOCKER__ : https://docs.docker.com/engine/installation/#get-started
+## Making and using  Plugins
+- Add __filesystem_logger2.cpp__ to _osquery/osquery/logger/plugins/_ .
+- This plugin is use for logging as well as sending logs to remote server.
+-  Add this plugin_name to _osquery/osquery/logger/CMakeLists.txt
 
-osquery provides several [FIM features](http://osquery.readthedocs.org/en/stable/deployment/file-integrity-monitoring/) too! Just as OS concepts are represented in tabular form, the daemon can track OS events and later expose them in a table. Tables like [`file_events`](https://osquery.io/docs/tables/#file_events) or [`yara_events`](https://osquery.io/docs/tables/#yara_events) can be selected to retrieve buffered events.
+```
+osquery/osquery/logger/CMakeList.txt
+...
+file(GLOB OSQUERY_LOGGER_TESTS "tests/*.cpp")
+ADD_OSQUERY_TEST_CORE(${OSQUERY_LOGGER_TESTS})
 
-The configuration allows you to organize files and directories for monitoring. Those sets can be paired with lists of YARA signatures or configured for additional monitoring such as access events.
+set(OSQUERY_LOGGER_PLUGINS
+  "plugins/buffered.cpp"
+  "plugins/filesystem_logger.cpp"
+  "plugins/filesystem_logger2.cpp"                                 # here
+  "plugins/tls_logger.cpp"
+  "plugins/stdout.cpp"
+)
 
-## Process and socket auditing
+ADD_OSQUERY_LIBRARY_ADDITIONAL(osquery_logger_plugins ${OSQUERY_LOGGER_PLUGINS})
+...
 
-There are several forms of [eventing](http://osquery.readthedocs.org/en/stable/development/pubsub-framework/) in osquery along with file modifications and accesses. These range from disk mounts, network reconfigurations, hardware attach and detaching, and process starting. For a complete set review the table documentation and look for names with the `_events` suffix.
+```
+## Linking Library
+- __filesystem_logger2__ is using libcurl library. Hence, for linking this library we have to add it to _osquery/osquery/tables/CMakeLists.txt_
+```
+osquery/osquery/tables/CMakeLists.txt
+...
+# Linux specific and applicable tables.
+if(LINUX)
+  set(TABLE_PLATFORM "linux")
 
-## Vulnerabilities
+  ADD_OSQUERY_LINK_ADDITIONAL("libresolv.so")
+  ADD_OSQUERY_LINK_ADDITIONAL("cryptsetup devmapper")
+  ADD_OSQUERY_LINK_ADDITIONAL("gcrypt gpg-error")
+  ADD_OSQUERY_LINK_ADDITIONAL("blkid")
+  ADD_OSQUERY_LINK_ADDITIONAL("ip4tc")
+  ADD_OSQUERY_LINK_ADDITIONAL("libcurl.a")                         # here
 
-Facebook has a [bug bounty](https://www.facebook.com/whitehat/) program that includes osquery. If you find a security vulnerability in osquery, please submit it via the process outlined on that page and do not file a public issue. For more information on finding vulnerabilities in osquery, see a recent blog post about [bug-hunting osquery](https://www.facebook.com/notes/facebook-bug-bounty/bug-hunting-osquery/954850014529225).
+  ADD_OSQUERY_LINK_ADDITIONAL("apt-pkg dpkg lzma lz4 bz2")
+  ADD_OSQUERY_LINK_ADDITIONAL("rpm rpmio beecrypt popt db")
+endif()
 
-## Learn more
-
-Read the [launch blog post](https://code.facebook.com/posts/844436395567983/introducing-osquery/) for background on the project.
-If you're interested in learning more about osquery, visit the [users guide](https://osquery.readthedocs.org/) and browse our RFC-labeled Github issues. Development and usage discussion is happing in the osquery Slack, grab an invite automatically: [https://osquery-slack.herokuapp.com/](https://osquery-slack.herokuapp.com/)!
+if(POSIX)
+  ADD_OSQUERY_LINK_ADDITIONAL("augeas fa xml2")
+endif()
+...
+```
+## Configuring OSqueryd
+- We can configure OSquery by using __osqueryd2.conf__. You can specify which plugin to use, where to produce logs, ip address of the remote server, and many other things. When starting osqueryd you may use __--logger_plugin=name__ where the name is the string identifier used in REGISTER ( for filesystem_logger2 use __filesystem2__ ). For using __osqueryd2.conf__ you have to use --config_path="/path/to/config/osqueryd2.conf" while running osqueryd.
+## Running osqueryd
+```bash
+$ sudo ./build/xenial/osquery/osqueryd --config_path="/path/to/config//osqueryd2.conf" --allow_unsafe
+```
