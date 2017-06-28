@@ -7,6 +7,7 @@
 osquery is an operating system instrumentation framework for OS X/macOS, Windows, and Linux. <br/>
 The tools make low-level operating system analytics and monitoring both performant and intuitive.
 
+<center>
 | Platform | Build status  | | | |
 |----------|---------------|---|---|---|
 macOS 10.12    | [![Build Status](https://jenkins.osquery.io/job/osqueryMasterBuildOSX10.12/badge/icon)](https://jenkins.osquery.io/job/osqueryMasterBuildOSX10.12/) | | **Homepage:** | https://osquery.io
@@ -16,10 +17,13 @@ Ubuntu 14.04   | [![Build Status](https://jenkins.osquery.io/job/osqueryMasterBu
 Ubuntu 16.04 | [![Build Status](https://jenkins.osquery.io/job/osqueryMasterBuildUbuntu16/badge/icon)](https://jenkins.osquery.io/job/osqueryMasterBuildUbuntu16/) | | **Guide:** | https://osquery.readthedocs.org
 Windows 2016 | [![Build Status](https://jenkins.osquery.io/job/osqueryMasterBuildWindows2016/badge/icon)](https://jenkins.osquery.io/job/osqueryMasterBuildWindows16/) | | [![Slack Status](https://osquery-slack.herokuapp.com/badge.svg)](https://osquery-slack.herokuapp.com) | https://osquery-slack.herokuapp.com
 Windows 10 | [![Build Status](https://jenkins.osquery.io/job/osqueryMasterBuildWindows10/badge/icon)](https://jenkins.osquery.io/job/osqueryMasterBuildWindows10/) | | |
-
+</center>
+<center>
 There are many additional [continuous build jobs](https://jenkins.osquery.io/) that perform **dynamic** and **static** analysis, test the **package build** process, **rebuild dependencies** from source, assure **deterministic build** on macOS and Linux, **fuzz** test the virtual tables, and build on several other platforms not included above. Code safety, testing rigor, data integrity, and a friendly development community are our primary goals.
-
+</center>
+<center>
 # Platform : Ubuntu 16.04 -
+</center>
 ## Downloads 
 
 For latest stable builds for OS X (pkg) and Linux (deb/rpm), as well as yum and apt repository information visit [https://osquery.io/downloads](https://osquery.io/downloads/). Windows 10, 8, Server 2012 and 2016 packages are published to [Chocolatey](https://chocolatey.org/packages/osquery).
@@ -47,7 +51,7 @@ $ ./build/<platform>/osquery/osqueryi
 - __FPM__ : http://midactstech.blogspot.in/2014/05/install-fpm.html
 - __DOCKER__ : https://docs.docker.com/engine/installation/#get-started
 ## Making and using  Plugins
-- Add __filesystem_logger2.cpp__ to _osquery/osquery/logger/plugins/_ .
+- Add __filesystemlogger2.cpp__ to _osquery/osquery/logger/plugins/_ .
 - This plugin is use for logging as well as sending logs to remote server.
 -  Add this plugin_name to _osquery/osquery/logger/CMakeLists.txt
 
@@ -70,7 +74,7 @@ ADD_OSQUERY_LIBRARY_ADDITIONAL(osquery_logger_plugins ${OSQUERY_LOGGER_PLUGINS})
 
 ```
 ## Linking Library
-- __filesystem_logger2__ is using libcurl library. Hence, for linking this library we have to add it to _osquery/osquery/tables/CMakeLists.txt_
+- __filesystemlogger2__ is using libcurl library. Hence, for linking this library we have to add it to _osquery/osquery/tables/CMakeLists.txt_
 ```
 osquery/osquery/tables/CMakeLists.txt
 ...
@@ -95,8 +99,8 @@ endif()
 ...
 ```
 ## Configuring OSqueryd
-- We can configure OSquery by using __osqueryd2.conf__. You can specify which plugin to use, where to produce logs, ip address of the remote server, and many other things. When starting osqueryd you may use __--logger_plugin=name__ where the name is the string identifier used in REGISTER ( for filesystem_logger2 use __filesystem2__ ). For using __osqueryd2.conf__ you have to use --config_path="/path/to/config/osqueryd2.conf" while running osqueryd.
+- We can configure OSquery by using __osqueryd2.conf__. You can specify which plugin to use, where to produce logs, ip address of the remote server, and many other things. When starting osqueryd you may use __--logger_plugin=name__ where the name is the string identifier used in REGISTER ( for filesystemlogger2 use __filesystem2__ ). For using __osqueryd2.conf__ you have to use --config_path="/path/to/config/osqueryd2.conf" while running osqueryd.
 ## Running osqueryd
 ```bash
-$ sudo ./build/xenial/osquery/osqueryd --config_path="/path/to/config/osqueryd2.conf" --allow_unsafe
+$ sudo ./build/xenial/osquery/osqueryd --config_path="/path/to/config//osqueryd2.conf" --allow_unsafe
 ```
