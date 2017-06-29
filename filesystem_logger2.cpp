@@ -35,6 +35,7 @@ FLAG(string,
 FLAG_ALIAS(std::string, osquery_log2_dir, logger2_path);
 
 FLAG(int32, logger2_mode, 0640, "Decimal mode for log files (default '0640')");
+FLAG(string, ip_address, OSQUERY_LOG_HOME, "ipinvaid");
 
 const std::string kFilesystemLogger2Filename = "osqueryd.results.log";
 const std::string kFilesystemLogger2Snapshots = "osqueryd.snapshots.log";
@@ -99,15 +100,16 @@ Status FilesystemLogger2Plugin::logString(const std::string& s) {
   CURLcode res;
   const std::string m = std::string("[") + s + std::string("]");
   const char* postthis = m.c_str();
+  //const std::string l="192.168.150.129:8765";
  
   curl = curl_easy_init();
   if(curl) {
-    curl_easy_setopt(curl, CURLOPT_URL, "http://192.168.0.183");
+    curl_easy_setopt(curl, CURLOPT_URL, FLAGS_ip_address.c_str() );
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postthis);
  
     /* if we don't provide POSTFIELDSIZE, libcurl will strlen() by
        itself */ 
-    //curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, std::strlen(&postthis));
+    //curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, std::strlen(*postthis));
  
     /* Perform the request, res will get the return code */ 
     res = curl_easy_perform(curl);
